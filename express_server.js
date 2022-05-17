@@ -12,18 +12,23 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
-  }
-}
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+  usermID: {
+    id: "usermID",
+    email: "ikchoi0@gmail.com",
+    password: "1",
+  },
+};
 
 function generateRandomString() {
   let string = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -34,29 +39,43 @@ function generateRandomString() {
   }
   return result;
 }
-
+function checkEmailInDatabase(users, email) {
+  for (let key of Object.keys(users)) {
+    if (users[key].email === email) {
+      // email already exists
+      // res.redirect('/register');
+      // return;
+      return { error: null, data: users[key] };
+    }
+  }
+  return { error: "400", data: {} };
+}
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/hello", (req, res) => {
-  const templateVars = { username: req.cookies["username"], greeting: "Hello World!" };
-  res.render("hello_world", templateVars);
-});
+// app.get("/hello", (req, res) => {
+//   const templateVars = { username: req.cookies["username"], greeting: "Hello World!" };
+//   res.render("hello_world", templateVars);
+// });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const user = users[req.cookies["user_id"]] || {};
+  console.log(users[req.cookies["user_id"]]);
+  const templateVars = { user: user, urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"]};
+  const user = users[req.cookies["user_id"]] || {};
+  const templateVars = { user: user };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const user = users[req.cookies["user_id"]] || {};
   const templateVars = {
-    username: req.cookies["username"],
+    user: user,
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
   };
@@ -69,7 +88,13 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("registration");
+  const user = users[req.cookies["user_id"]] || {};
+  res.render("registration", { user: user });
+});
+
+app.get("/login", (req, res) => {
+  const user = users[req.cookies["user_id"]] || {};
+  res.render("login", {user:user});
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -89,23 +114,48 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  const {email, password} = req.body;
+  const { error, data } = checkEmailInDatabase(users, email);
+  if (error) {
+    return res.status("403").send("Email is not registered");
+  }
+  if (password !== data.password) {
+    return res.status("403").send("Password does not match!");
+  }
+  res.cookie("user_id", data.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
-  res.redirect('/urls')
+  res.clearCookie("user_id");
+  res.redirect("/urls");
 });
 
 app.post("/register", (req, res) => {
-  
+  const { email, password } = req.body;
+  if (!email || !password) {
+    // res.statusCode = 400;
+    // res.redirect("/register");
+    res.status("400").send("enter email/password");
+    return;
+  }
+  const { error, data } = checkEmailInDatabase(users, email);
+  if (!error) {
+    return res.status("400").send("Email exists");
+  }
+  const generatedId = generateRandomString();
+  users[generatedId] = {
+    id: generatedId,
+    email,
+    password,
+  };
+  res.cookie("user_id", generatedId);
+  res.redirect("/urls");
 });
 
 app.use((req, res) => {
   res.status(404).send(`<h1>Page Not Found: ${req.url}</h1>`);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}`);

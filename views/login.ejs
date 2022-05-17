@@ -13,9 +13,9 @@
   <body>
     <%- include('partials/_header', { username: null }) %>
     <main style="margin: 1em;">
-      <h3>Registration</h3>
+      <h3>Login</h3>
 
-      <form action="/register" method="POST">
+      <form action="/login" method="POST">
         <div class="form-row">
           <div class="col-md-4 mb-3">
             <label for="email">Email</label>
@@ -28,7 +28,7 @@
             <input type="password" name="password" class="form-control" id="password" placeholder="Enter Password" >
           </div>
         </div>
-        <button class="btn btn-primary" type="submit">Submit form</button>
+        <button class="btn btn-primary" type="submit">Login</button>
       </form>
 
 
