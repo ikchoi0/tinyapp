@@ -6,10 +6,24 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
 
 function generateRandomString() {
   let string = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -54,6 +68,10 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
 });
 
+app.get("/register", (req, res) => {
+  res.render("registration");
+});
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
@@ -79,6 +97,15 @@ app.post("/logout", (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls')
 });
+
+app.post("/register", (req, res) => {
+  
+});
+
+app.use((req, res) => {
+  res.status(404).send(`<h1>Page Not Found: ${req.url}</h1>`);
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}`);
