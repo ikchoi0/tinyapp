@@ -18,10 +18,11 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% if (Object.keys(user).length === 0) { %>
           <a class="nav-item nav-link"href="/login">Login</a>
+          <a class="nav-item nav-link"href="/register">Register</a>
         <% } else { %> 
         <form class="form-inline" action="/logout" method="POST">
           <div class="mx-sm-1">
-            <label for="staticEmail2" class="sr-only"><%= user.email %></label>
+            <label for="staticEmail2" class="sr-only">Logged in as:<%= user.email %></label>
             <input type="text" readonly class="form-control-plaintext" style="text-align: center;" value="<%= user.email %>">
           </div>
           <button type="submit" class="btn btn-outline-dark">Logout</button>
