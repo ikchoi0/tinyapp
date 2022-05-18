@@ -12,9 +12,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
+const urlDatabase1 = {
+  b6UTxQ: {
+        longURL: "https://www.tsn.ca",
+        userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
+};
+
 const users = {
-  userRandomID: {
-    id: "userRandomID",
+  aJ48lW: {
+    id: "aJ48lW",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
@@ -68,7 +79,7 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user = users[req.cookies["user_id"]] || {};
-  const templateVars = { user: user, urls: urlDatabase };
+  const templateVars = { user: user, urls: urlDatabase1 };
   res.render("urls_index", templateVars);
 });
 
@@ -83,14 +94,14 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: user,
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase1[req.params.shortURL].longURL,
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   // const longURL = ...
-  res.redirect(urlDatabase[req.params.shortURL]);
+  res.redirect(urlDatabase1[req.params.shortURL].longURL);
 });
 
 app.get("/register", (req, res) => {
@@ -104,22 +115,29 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  delete urlDatabase1[req.params.shortURL];
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  const user_id = req.cookies["user_id"];
+  urlDatabase1[req.params.shortURL] = {
+    longURL: req.body.longURL,
+    userID: user_id
+  }
   res.redirect("/urls/" + req.params.shortURL);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.cookies["user_id"]);
   if (!loggedIn(req.cookies["user_id"])) {
     return res.redirect("/login");
   }
+  const user_id = req.cookies["user_id"];
   let generatedURL = generateRandomString();
-  urlDatabase[generatedURL] = req.body.longURL;
+  urlDatabase1[generatedURL] = {
+    longURL: req.body.longURL,
+    userID: user_id
+  }
   res.redirect(`/urls/${generatedURL}`); // Respond with 'Ok' (we will replace this)
 });
 
