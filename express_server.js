@@ -50,6 +50,13 @@ function checkEmailInDatabase(users, email) {
   }
   return { error: "400", data: {} };
 }
+
+function loggedIn (cookie) {
+  if (cookie) {
+    return true;
+  }
+  return false;
+}
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -107,6 +114,10 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  console.log(req.cookies["user_id"]);
+  if (!loggedIn(req.cookies["user_id"])) {
+    return res.redirect("/login");
+  }
   let generatedURL = generateRandomString();
   urlDatabase[generatedURL] = req.body.longURL;
   res.redirect(`/urls/${generatedURL}`); // Respond with 'Ok' (we will replace this)
